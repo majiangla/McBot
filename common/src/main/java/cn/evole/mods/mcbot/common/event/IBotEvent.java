@@ -3,7 +3,11 @@ package cn.evole.mods.mcbot.common.event;
 import cn.evole.mods.mcbot.api.bot.BotApi;
 import cn.evole.mods.mcbot.api.cmd.CmdApi;
 import cn.evole.mods.mcbot.api.data.ChatRecordApi;
+import cn.evole.mods.mcbot.api.data.UserInfoApi;
+import cn.evole.mods.mcbot.Constants;
 import cn.evole.mods.mcbot.common.config.ModConfig;
+import cn.evole.mods.mcbot.plugins.data.UserInfo;
+import cn.evole.mods.mcbot.util.CmdUtils;
 import cn.evole.mods.mcbot.util.onebot.CQUtils;
 import cn.evole.onebot.client.annotations.SubscribeEvent;
 import cn.evole.onebot.client.interfaces.Listener;
@@ -29,6 +33,10 @@ public class IBotEvent implements Listener {
                 && !String.valueOf(event.getUserId()).equals(ModConfig.get().getBotConfig().getBotId().getValue())//过滤机器人
         ) {
             String send = CQUtils.replace(event, 2000);//暂时匹配仅符合字符串聊天内容与图片
+            if (send.startsWith("!!")) {
+                onOriginalCmd(event, send);
+                return;
+            }
             if (!send.startsWith(ModConfig.get().getCmd().getCmdStart().getValue())//过滤命令前缀
             ) {
                 if (ModConfig.get().getStatus().getRChatEnable().getValue())/*接受聊天开关*/ onGroupMessage(event, send);
@@ -52,12 +60,16 @@ public class IBotEvent implements Listener {
         String groupNick = ModConfig.get().getCmd().getGroupNickOn().getValue() // 是否使用群昵称
                 ? nick == null ? event.getSender().getCard() : nick // 防止api返回为空
                 : event.getSender().getNickname();
+        UserInfo userInfo = UserInfoApi.get(String.valueOf(event.getGroupId()), String.valueOf(event.getUserId()));
+        String displayName = (userInfo != null && userInfo.getGameName() != null && !userInfo.getGameName().isEmpty())
+                ? userInfo.getGameName()
+                : groupNick;
 
         String finalMsg = ModConfig.get().getCmd().getGamePrefixOn().getValue()
                 ? ModConfig.get().getCmd().getIdGamePrefixOn().getValue()
-                ? String.format("§b[§l%s§r(§5%s§r)§b]§a<%s>§f %s", ModConfig.get().getCmd().getQqGamePrefix().getValue(), event.getGroupId(), groupNick, send)
-                : String.format("§b[§l%s§b]§a<%s>§f %s", ModConfig.get().getCmd().getQqGamePrefix().getValue(), groupNick, send)
-                : String.format("§a<%s>§f %s", groupNick, send);
+                ? String.format("§b[§l%s§r(§5%s§r)§b]§a<%s>§f %s", ModConfig.get().getCmd().getQqGamePrefix().getValue(), event.getGroupId(), displayName, send)
+                : String.format("§b[§l%s§b]§a<%s>§f %s", ModConfig.get().getCmd().getQqGamePrefix().getValue(), displayName, send)
+                : String.format("§a<%s>§f %s", displayName, send);
 
         ChatRecordApi.syncAdd(String.valueOf(event.getMessageId()), String.valueOf(event.getGroupId()), String.valueOf(event.getSelfId()), finalMsg);
 
@@ -67,6 +79,17 @@ public class IBotEvent implements Listener {
 
     private void onGroupCmd(GroupMessageEvent event, String rawMsg) {
         CmdApi.invokeGroupCommand(event, rawMsg);
+    }
+
+    private void onOriginalCmd(GroupMessageEvent event, String rawMsg) {
+        if (!ModConfig.get().getStatus().getRCmdEnable().getValue()) return;
+        if (!CmdUtils.groupAdminParse(event)) {
+            BotApi.sendGroupMsg(event.getGroupId(), "仅群管理员可使用原版命令执行（!!）");
+            return;
+        }
+        String cmd = rawMsg.substring(2).trim();
+        if (cmd.isEmpty()) return;
+        BotApi.sendGroupMsg(event.getGroupId(), Constants.mcBotCommand.runCommand(cmd));
     }
 
     @SubscribeEvent
