@@ -37,8 +37,8 @@ public class McBot {
     public static void onServerStarting(MinecraftServer server) {
         SERVER = server;//获取服务器实例
         I18n.init();
-        commonExecutor.submit(CmdHandler::load);//自定义命令加载
-        commonExecutor.submit(DataHandler::load);//数据加载
+        CmdHandler.load();//自定义命令加载
+        DataHandler.load();//数据加载
 
     }
 
@@ -56,8 +56,8 @@ public class McBot {
     public static void onServerStopping(MinecraftServer server) {
         isShutdown = true;
         LOGGER.info("▌ §c正在关闭群服互联");
-        commonExecutor.submit(CmdHandler::clear);//自定义命令持久层清空
-        commonExecutor.submit(DataHandler::save);//数据储存
+        CmdHandler.clear();//自定义命令持久层清空
+        DataHandler.save();//数据储存
     }
 
     public static void onServerStopped(MinecraftServer server) {
