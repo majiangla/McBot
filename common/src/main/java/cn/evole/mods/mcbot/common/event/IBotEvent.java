@@ -79,6 +79,26 @@ public class IBotEvent implements Listener {
             }
         }
 
+        String senderUserId = String.valueOf(event.getSender().getUserId());
+        if (senderUserId == null || senderUserId.isEmpty() || "null".equals(senderUserId)) {
+            senderUserId = String.valueOf(event.getUserId());
+        }
+        UserInfo userInfo = UserInfoApi.get(String.valueOf(event.getGroupId()), senderUserId);
+        String eventUserId = String.valueOf(event.getUserId());
+        String playerId = userInfo == null ? "null" : userInfo.getGameName();
+        String displayName = (userInfo != null && userInfo.getGameName() != null && !userInfo.getGameName().isEmpty())
+                ? userInfo.getGameName()
+                : groupNick;
+        if (ModConfig.get().getCommon().getDebug().getValue()) {
+            Constants.LOGGER.info("[McBot-Debug] Message ids: groupId={}, event.userId={}, sender.userId={}, playerId={}", event.getGroupId(), eventUserId, senderUserId, playerId);
+            if (userInfo != null && userInfo.getGameName() != null && !userInfo.getGameName().isEmpty()) {
+                Constants.LOGGER.info("[McBot-Debug] Bind hit: groupId={}, userId={}, gameName={}", event.getGroupId(), senderUserId, userInfo.getGameName());
+            } else {
+                Constants.LOGGER.info("[McBot-Debug] Bind miss: groupId={}, userId={}, fallbackNick={}", event.getGroupId(), senderUserId, groupNick);
+            }
+        }
+
+
         String finalMsg = ModConfig.get().getCmd().getGamePrefixOn().getValue()
                 ? ModConfig.get().getCmd().getIdGamePrefixOn().getValue()
                 ? String.format("§b[§l%s§r(§5%s§r)§b]§a<%s>§f %s", ModConfig.get().getCmd().getQqGamePrefix().getValue(), event.getGroupId(), displayName, send)

@@ -27,8 +27,10 @@ public class UserInfoApi {
         String normalizedGroup = normalizeId(group_id);
         String normalizedUser = normalizeId(user_id);
         for (UserInfo userInfo : userInfos){
+
             if (normalizeId(userInfo.getGroupId()).equals(normalizedGroup)
                     && normalizeId(userInfo.getQqId()).equals(normalizedUser)){
+
                 return true;
             }
         }
@@ -39,8 +41,10 @@ public class UserInfoApi {
         String normalizedGroup = normalizeId(group_id);
         String normalizedGameName = normalizeId(game_name);
         for (UserInfo userInfo : userInfos){
+
             if (normalizeId(userInfo.getGroupId()).equals(normalizedGroup)
                     && normalizeId(userInfo.getGameName()).equals(normalizedGameName)){
+
                 return true;
             }
         }
