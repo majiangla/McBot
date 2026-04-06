@@ -60,10 +60,26 @@ public class IBotEvent implements Listener {
         String groupNick = ModConfig.get().getCmd().getGroupNickOn().getValue() // 是否使用群昵称
                 ? nick == null ? event.getSender().getCard() : nick // 防止api返回为空
                 : event.getSender().getNickname();
-        UserInfo userInfo = UserInfoApi.get(String.valueOf(event.getGroupId()), String.valueOf(event.getUserId()));
+
+        String senderUserId = String.valueOf(event.getSender().getUserId());
+        if (senderUserId == null || senderUserId.isEmpty() || "null".equals(senderUserId)) {
+            senderUserId = String.valueOf(event.getUserId());
+        }
+        UserInfo userInfo = UserInfoApi.get(String.valueOf(event.getGroupId()), senderUserId);
+        String eventUserId = String.valueOf(event.getUserId());
+        String playerId = userInfo == null ? "null" : userInfo.getGameName();
         String displayName = (userInfo != null && userInfo.getGameName() != null && !userInfo.getGameName().isEmpty())
                 ? userInfo.getGameName()
                 : groupNick;
+        if (ModConfig.get().getCommon().getDebug().getValue()) {
+            Constants.LOGGER.info("[McBot-Debug] Message ids: groupId={}, event.userId={}, sender.userId={}, playerId={}", event.getGroupId(), eventUserId, senderUserId, playerId);
+            if (userInfo != null && userInfo.getGameName() != null && !userInfo.getGameName().isEmpty()) {
+                Constants.LOGGER.info("[McBot-Debug] Bind hit: groupId={}, userId={}, gameName={}", event.getGroupId(), senderUserId, userInfo.getGameName());
+            } else {
+                Constants.LOGGER.info("[McBot-Debug] Bind miss: groupId={}, userId={}, fallbackNick={}", event.getGroupId(), senderUserId, groupNick);
+            }
+        }
+
 
         String finalMsg = ModConfig.get().getCmd().getGamePrefixOn().getValue()
                 ? ModConfig.get().getCmd().getIdGamePrefixOn().getValue()
