@@ -19,26 +19,45 @@ public class UserInfoApi {
     public static List<UserInfo> userInfos = new ArrayList<>();
     public static Path userBindFile = FileUtils.checkFile(Constants.DATA_FOLDER.resolve("userBind.csv"));
 
+    private static String normalizeId(String value) {
+        return value == null ? "" : value.trim().replace("\"", "");
+    }
+
     public static boolean groupHas(String group_id, String user_id){
+        String normalizedGroup = normalizeId(group_id);
+        String normalizedUser = normalizeId(user_id);
         for (UserInfo userInfo : userInfos){
-            if (userInfo.getGroupId().equals(group_id)){
-                return userInfo.getQqId().equals(user_id);
+            if (normalizeId(userInfo.getGroupId()).equals(normalizedGroup)
+                    && normalizeId(userInfo.getQqId()).equals(normalizedUser)){
+                return true;
             }
         }
         return false;
     }
 
     public static boolean isInGame(String group_id, String game_name){
+        String normalizedGroup = normalizeId(group_id);
+        String normalizedGameName = normalizeId(game_name);
         for (UserInfo userInfo : userInfos){
-            if (userInfo.getGroupId().equals(group_id)){
-                return userInfo.getGameName().equals(game_name);
+            if (normalizeId(userInfo.getGroupId()).equals(normalizedGroup)
+                    && normalizeId(userInfo.getGameName()).equals(normalizedGameName)){
+                return true;
             }
         }
         return false;
     }
 
     public static UserInfo get(String group_id, String user_id){
-        return userInfos.stream().filter(userInfo -> userInfo.getGroupId().equals(group_id) && userInfo.getQqId().equals(user_id)).findFirst().orElse(null);
+        String normalizedGroup = normalizeId(group_id);
+        String normalizedUser = normalizeId(user_id);
+        for (int i = userInfos.size() - 1; i >= 0; i--) {
+            UserInfo userInfo = userInfos.get(i);
+            if (normalizeId(userInfo.getGroupId()).equals(normalizedGroup)
+                    && normalizeId(userInfo.getQqId()).equals(normalizedUser)) {
+                return userInfo;
+            }
+        }
+        return null;
     }
 
     public static void add(String group_id, String qq_id, String game_name){
