@@ -60,6 +60,7 @@ public class IBotEvent implements Listener {
         String groupNick = ModConfig.get().getCmd().getGroupNickOn().getValue() // 是否使用群昵称
                 ? nick == null ? event.getSender().getCard() : nick // 防止api返回为空
                 : event.getSender().getNickname();
+
         String senderUserId = String.valueOf(event.getSender().getUserId());
         if (senderUserId == null || senderUserId.isEmpty() || "null".equals(senderUserId)) {
             senderUserId = String.valueOf(event.getUserId());
@@ -78,6 +79,7 @@ public class IBotEvent implements Listener {
                 Constants.LOGGER.info("[McBot-Debug] Bind miss: groupId={}, userId={}, fallbackNick={}", event.getGroupId(), senderUserId, groupNick);
             }
         }
+
 
         String finalMsg = ModConfig.get().getCmd().getGamePrefixOn().getValue()
                 ? ModConfig.get().getCmd().getIdGamePrefixOn().getValue()
