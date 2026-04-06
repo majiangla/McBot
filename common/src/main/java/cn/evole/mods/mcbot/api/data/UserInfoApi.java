@@ -21,8 +21,8 @@ public class UserInfoApi {
 
     public static boolean groupHas(String group_id, String user_id){
         for (UserInfo userInfo : userInfos){
-            if (userInfo.getGroupId().equals(group_id)){
-                return userInfo.getQqId().equals(user_id);
+            if (userInfo.getGroupId().equals(group_id) && userInfo.getQqId().equals(user_id)){
+                return true;
             }
         }
         return false;
@@ -30,15 +30,21 @@ public class UserInfoApi {
 
     public static boolean isInGame(String group_id, String game_name){
         for (UserInfo userInfo : userInfos){
-            if (userInfo.getGroupId().equals(group_id)){
-                return userInfo.getGameName().equals(game_name);
+            if (userInfo.getGroupId().equals(group_id) && userInfo.getGameName().equals(game_name)){
+                return true;
             }
         }
         return false;
     }
 
     public static UserInfo get(String group_id, String user_id){
-        return userInfos.stream().filter(userInfo -> userInfo.getGroupId().equals(group_id) && userInfo.getQqId().equals(user_id)).findFirst().orElse(null);
+        for (int i = userInfos.size() - 1; i >= 0; i--) {
+            UserInfo userInfo = userInfos.get(i);
+            if (userInfo.getGroupId().equals(group_id) && userInfo.getQqId().equals(user_id)) {
+                return userInfo;
+            }
+        }
+        return null;
     }
 
     public static void add(String group_id, String qq_id, String game_name){
